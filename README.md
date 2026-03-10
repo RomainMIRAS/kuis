@@ -1,49 +1,118 @@
-# KUIS - Kubernetes UI Service
+<p align="center">
+  <img src="web/public/favicon.svg" width="80" height="80" alt="KUIS logo" />
+</p>
 
-A lightweight, professional web UI for Kubernetes cluster management. Inspired by K9s, built for the browser.
+<h1 align="center">KUIS</h1>
 
-## Features
+<p align="center">
+  <strong>Lightweight Kubernetes Web UI — K9s for the browser.</strong>
+</p>
 
-- **Resource Browser** — Interactive tables for Pods, Deployments, Services, ConfigMaps, Secrets, Ingresses, StatefulSets, DaemonSets, Jobs, CronJobs, Nodes
-- **Real-time Updates** — WebSocket-powered live resource monitoring via Kubernetes informers
-- **Pod Logs** — Streaming log viewer with terminal emulation (xterm.js)
-- **Pod Exec** — Interactive shell into containers directly from the browser
-- **YAML Editor** — View and edit resource manifests with Monaco Editor
-- **Actions** — Scale deployments, rollout restarts, delete resources
-- **Multi-Kubeconfig** — Load all kubeconfig files from `~/.kube/configs/`, switch between clusters instantly
-- **Namespace/Context Switching** — Quick selectors in the header
-- **Search & Filter** — Filter resources by name across all tables
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-00e5a0?style=flat-square" alt="License" /></a>
+  <img src="https://img.shields.io/badge/go-1.22+-00ADD8?style=flat-square&logo=go&logoColor=white" alt="Go" />
+  <img src="https://img.shields.io/badge/react-19-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/docker-~30MB-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker" />
+</p>
+
+<p align="center">
+  Single binary. Embedded frontend. Zero dependencies.<br/>
+  Just <code>docker run</code> and manage your clusters from any browser.
+</p>
+
+---
+
+## Why KUIS?
+
+- **K9s is great, but terminal-only** — KUIS gives you the same speed in a shareable web UI
+- **Kubernetes Dashboard is heavy** — KUIS is a single ~30MB binary with everything embedded
+- **Lens is a desktop app** — KUIS runs anywhere Docker does, including inside your cluster
+- **Multi-cluster native** — Drop kubeconfigs in a folder, switch between clusters in one click
 
 ## Quick Start
 
-### Docker
-
 ```bash
-docker build -t kuis .
-docker run -p 8080:8080 -v ~/.kube:/home/nonroot/.kube:ro kuis
+docker run -p 8080:8080 -v ~/.kube:/home/nonroot/.kube:ro ghcr.io/romainmiras/kuis
 ```
 
-Then open [http://localhost:8080](http://localhost:8080).
+Open [http://localhost:8080](http://localhost:8080) — that's it.
 
-### In-Cluster Deployment
+<details>
+<summary><strong>Build from source</strong></summary>
 
-Deploy with a ServiceAccount that has the necessary RBAC permissions:
+```bash
+git clone https://github.com/RomainMIRAS/kuis.git
+cd kuis
+make build
+./kuis
+```
+
+</details>
+
+<details>
+<summary><strong>Deploy in-cluster</strong></summary>
 
 ```bash
 kubectl apply -f deploy/
 ```
 
-### Development
+Creates a namespace `kuis`, a ServiceAccount with read/write RBAC, a Deployment, and a Service on port 8080.
 
-```bash
-# Install frontend dependencies
-cd web && npm install && cd ..
+</details>
 
-# Run backend + frontend with hot reload
-make dev
+<!-- ## Screenshots
+
+Screenshots will be added here once the UI is running against a live cluster.
+
+TODO: Add screenshots/GIFs showing:
+- Cluster overview dashboard
+- Resource table with real-time updates
+- Pod logs streaming
+- Pod exec terminal
+- YAML editor
+- Multi-kubeconfig switching
+-->
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| **Resource Browser** | Interactive tables for Pods, Deployments, Services, ConfigMaps, Secrets, Ingresses, StatefulSets, DaemonSets, Jobs, CronJobs, Nodes |
+| **Real-time Updates** | WebSocket-powered live monitoring via Kubernetes watch API |
+| **Pod Logs** | Streaming log viewer with xterm.js terminal emulation |
+| **Pod Exec** | Interactive shell into containers directly from the browser |
+| **YAML Editor** | View and edit manifests with Monaco Editor (syntax highlighting, validation) |
+| **Actions** | Scale deployments, rollout restarts, delete resources with confirmation |
+| **Multi-Kubeconfig** | Auto-discovers configs from `~/.kube/configs/`, switch clusters instantly |
+| **Namespace & Context** | Quick selectors in the header, searchable dropdowns |
+| **Search & Filter** | Filter any resource table by name in real-time |
+
+## Multi-Kubeconfig
+
+KUIS automatically discovers kubeconfig files from two sources:
+
+1. **Default** — `~/.kube/config` (or `$KUBECONFIG`)
+2. **Config directory** — All files in `~/.kube/configs/` (or `$KUIS_KUBECONFIG_DIR`)
+
+```
+~/.kube/
+├── config              → "default"
+└── configs/
+    ├── production      → "production"
+    ├── staging.yaml    → "staging"
+    └── dev.conf        → "dev"
 ```
 
-Backend runs on `:8080`, frontend dev server on `:5173` (proxies API calls to backend).
+Switch from the **Config** dropdown in the header. The **Rescan** button picks up new files without restart.
+
+## Configuration
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `KUIS_PORT` | `8080` | Server port |
+| `KUBECONFIG` | `~/.kube/config` | Default kubeconfig path |
+| `KUIS_KUBECONFIG_DIR` | `~/.kube/configs` | Directory with extra kubeconfigs |
+| `KUIS_DEV` | `false` | Enable dev mode (frontend proxy) |
 
 ## Architecture
 
@@ -57,12 +126,12 @@ Backend runs on `:8080`, frontend dev server on `:5173` (proxies API calls to ba
 └───────┼──────────┼───────────────┼──────────┘
         │ HTTP/WS  │ WS           │ HTTP
 ┌───────┼──────────┼───────────────┼──────────┐
-│  Go Backend (Fiber v2)                       │
+│  Go Backend (single binary)                  │
 │  ┌─────────┐ ┌────────┐ ┌────────────────┐ │
 │  │REST API │ │  WS    │ │   Embedded     │ │
 │  │handlers │ │  hub   │ │   Frontend     │ │
 │  └────┬────┘ └───┬────┘ └────────────────┘ │
-│       └──────────┼───────────────────────── │
+│       └──────────┼──────────────────────────│
 │            client-go                         │
 └──────────────────┼──────────────────────────┘
                    │
@@ -71,53 +140,28 @@ Backend runs on `:8080`, frontend dev server on `:5173` (proxies API calls to ba
 
 ## Tech Stack
 
-| Layer    | Technology                          |
-|----------|-------------------------------------|
-| Backend  | Go 1.22, Fiber v2, client-go        |
+| Layer | Technology |
+|-------|-----------|
+| Backend | Go 1.22, Fiber v2, client-go |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS |
-| Terminal | xterm.js                            |
-| Editor   | Monaco Editor                       |
-| Tables   | TanStack Table                      |
-| Docker   | Multi-stage, distroless (~30MB)     |
+| Terminal | xterm.js |
+| Editor | Monaco Editor |
+| Tables | TanStack Table |
+| Docker | Multi-stage build, distroless (~30MB) |
 
-## Multi-Kubeconfig
-
-KUIS automatically discovers kubeconfig files from two sources:
-
-1. **Default kubeconfig** — `~/.kube/config` (or `$KUBECONFIG`)
-2. **Config directory** — All files in `~/.kube/configs/` (or `$KUIS_KUBECONFIG_DIR`)
-
-```
-~/.kube/
-├── config            → listed as "default"
-└── configs/
-    ├── production    → listed as "production"
-    ├── staging.yaml  → listed as "staging"
-    └── dev.conf      → listed as "dev"
-```
-
-Switch between kubeconfigs from the **Config** dropdown in the header. Each kubeconfig file's name (without extension) becomes its display name.
-
-The **Rescan** button (refresh icon) re-reads the directory to pick up newly added files without restarting KUIS.
-
-For Docker, mount the configs directory:
+## Development
 
 ```bash
-docker run -p 8080:8080 \
-  -v ~/.kube:/home/nonroot/.kube:ro \
-  kuis
+# Prerequisites: Go 1.22+, Node 22+, access to a K8s cluster
+
+cd web && npm install && cd ..
+make dev
 ```
 
-## Configuration
+Backend on `:8080`, frontend dev server on `:5173` with API proxy.
 
-| Variable              | Default                 | Description                       |
-|----------------------|-------------------------|-----------------------------------|
-| `KUIS_PORT`          | `8080`                  | Server port                       |
-| `KUBECONFIG`         | `~/.kube/config`        | Default kubeconfig path           |
-| `KUIS_KUBECONFIG_DIR`| `~/.kube/configs`       | Directory with extra kubeconfigs  |
-| `KUIS_DEV`           | `false`                 | Enable dev mode                   |
-| `KUIS_DEV_PROXY`     | `http://localhost:5173` | Frontend dev server URL           |
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-MIT
+[MIT](LICENSE) — Romain MIRAS

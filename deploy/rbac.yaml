@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kuis
+  namespace: kuis
+  labels:
+    app.kubernetes.io/name: kuis
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kuis
+  labels:
+    app.kubernetes.io/name: kuis
+rules:
+  - apiGroups: [""]
+    resources:
+      - pods
+      - pods/log
+      - pods/exec
+      - services
+      - configmaps
+      - secrets
+      - namespaces
+      - nodes
+      - events
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources:
+      - deployments
+      - deployments/scale
+      - statefulsets
+      - daemonsets
+      - replicasets
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["batch"]
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - ingresses
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kuis
+  labels:
+    app.kubernetes.io/name: kuis
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kuis
+subjects:
+  - kind: ServiceAccount
+    name: kuis
+    namespace: kuis
