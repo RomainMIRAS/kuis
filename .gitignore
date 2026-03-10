@@ -1,12 +1,12 @@
 # Binary
-kuis
+/kuis
 
 # Frontend
 web/node_modules/
 web/dist/
 
-# Embedded dist placeholder
-internal/api/dist/
+# Embedded dist (built from web/dist, not tracked)
+/internal/api/dist/
 
 # IDE
 .cursor/
