@@ -1,0 +1,22 @@
+# Binary
+kuis
+
+# Frontend
+web/node_modules/
+web/dist/
+
+# Embedded dist placeholder
+internal/api/dist/
+
+# IDE
+.cursor/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+vendor/
