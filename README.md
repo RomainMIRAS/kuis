@@ -37,6 +37,8 @@ docker run -p 8080:8080 -v ~/.kube:/home/nonroot/.kube:ro ghcr.io/romainmiras/ku
 
 Open [http://localhost:8080](http://localhost:8080) — that's it.
 
+The image is built and pushed to [GitHub Container Registry](https://github.com/RomainMIRAS/kuis/pkgs/container/kuis) on every push to `main`. Tags: `latest` and `sha-<commit>`. If `docker pull` is denied, set the package visibility to **Public** (repo → **Packages** → **kuis** → Package settings → Change visibility).
+
 <details>
 <summary><strong>Build from source</strong></summary>
 
