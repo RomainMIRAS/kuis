@@ -46,6 +46,7 @@ func NewServer(cfg *config.Config, mgr *k8s.ClientManager, watcher *k8s.Watcher)
 	api.Get("/namespaces", h.ListNamespaces)
 
 	api.Get("/resources/:group/:resource", h.ListResources)
+	api.Get("/resources/:group/:resource/:namespace/:name/events", h.ListResourceEvents)
 	api.Get("/resources/:group/:resource/:namespace/:name", h.GetResource)
 	api.Get("/resources/:group/:resource/:namespace/:name/yaml", h.GetResourceYAML)
 	api.Put("/resources/:group/:resource/:namespace/:name", h.UpdateResource)

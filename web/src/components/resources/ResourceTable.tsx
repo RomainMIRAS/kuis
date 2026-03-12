@@ -19,6 +19,7 @@ interface ResourceTableProps {
   loading: boolean
   error: string | null
   onSelect: (item: KubeResource) => void
+  onOpen?: (item: KubeResource) => void
 }
 
 function getColumns(resourceType: string): ColumnDef<KubeResource, any>[] {
@@ -160,7 +161,7 @@ function getColumns(resourceType: string): ColumnDef<KubeResource, any>[] {
   return base
 }
 
-export function ResourceTable({ items, resourceType, loading, error, onSelect }: ResourceTableProps) {
+export function ResourceTable({ items, resourceType, loading, error, onSelect, onOpen }: ResourceTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
 
@@ -246,6 +247,7 @@ export function ResourceTable({ items, resourceType, loading, error, onSelect }:
                 <tr
                   key={row.id}
                   onClick={() => onSelect(row.original)}
+                  onDoubleClick={() => onOpen?.(row.original)}
                   className="border-b border-kuis-border/50 hover:bg-kuis-hover cursor-pointer
                     transition-colors animate-fade-in"
                   style={{ animationDelay: `${Math.min(idx * 15, 300)}ms` }}

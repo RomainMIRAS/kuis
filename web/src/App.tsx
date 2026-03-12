@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { ResourceListPage } from '@/pages/ResourceListPage'
+import { ResourceViewPage } from '@/pages/ResourceViewPage'
 import { ClusterOverview } from '@/pages/ClusterOverview'
 import { useNamespaces, useContexts, useKubeconfigs } from '@/hooks/useResources'
 
@@ -80,6 +81,12 @@ export default function App() {
                       namespace={namespace}
                       key={`overview-${refreshKey}`}
                     />
+                  }
+                />
+                <Route
+                  path="/resources/:group/:resource/:namespace/:name"
+                  element={
+                    <ResourceViewPage key={`view-${refreshKey}`} />
                   }
                 />
                 <Route

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   X,
+  Maximize2,
   FileText,
   Terminal,
   ScrollText,
@@ -34,6 +36,7 @@ export function ResourceDetail({
   onClose,
   onRefresh,
 }: ResourceDetailProps) {
+  const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('overview')
   const [yamlContent, setYamlContent] = useState('')
   const [yamlLoading, setYamlLoading] = useState(false)
@@ -135,12 +138,25 @@ export function ResourceDetail({
               </div>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded hover:bg-kuis-hover text-kuis-muted hover:text-kuis-text transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => {
+                const detailNs = ns || '_'
+                navigate(`/resources/${resourceGroup}/${resourceType}/${detailNs}/${name}`)
+                onClose()
+              }}
+              title="Open full page"
+              className="p-1.5 rounded hover:bg-kuis-hover text-kuis-muted hover:text-kuis-text transition-colors"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded hover:bg-kuis-hover text-kuis-muted hover:text-kuis-text transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <div className="flex border-b border-kuis-border bg-kuis-surface">

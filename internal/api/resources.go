@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"sort"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
@@ -234,6 +236,72 @@ func (h *Handlers) ListContainers(c *fiber.Ctx) error {
 
 	containers := extractContainerNames(obj)
 	return c.JSON(fiber.Map{"containers": containers})
+}
+
+func (h *Handlers) ListResourceEvents(c *fiber.Ctx) error {
+	resource := c.Params("resource")
+	namespace := c.Params("namespace")
+	name := c.Params("name")
+
+	resourceKindMap := map[string]string{
+		"pods": "Pod", "deployments": "Deployment", "statefulsets": "StatefulSet",
+		"daemonsets": "DaemonSet", "replicasets": "ReplicaSet", "services": "Service",
+		"configmaps": "ConfigMap", "secrets": "Secret", "jobs": "Job",
+		"cronjobs": "CronJob", "ingresses": "Ingress", "nodes": "Node",
+		"namespaces": "Namespace",
+	}
+	kind := resourceKindMap[resource]
+	if kind == "" {
+		kind = strings.TrimSuffix(resource, "s")
+		kind = strings.ToUpper(kind[:1]) + kind[1:]
+	}
+
+	fieldSelector := "involvedObject.name=" + name
+	if kind != "" {
+		fieldSelector += ",involvedObject.kind=" + kind
+	}
+
+	events, err := h.client().Clientset.CoreV1().Events(namespace).List(c.Context(), metav1.ListOptions{
+		FieldSelector: fieldSelector,
+	})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	sort.Slice(events.Items, func(i, j int) bool {
+		ti := events.Items[i].LastTimestamp.Time
+		tj := events.Items[j].LastTimestamp.Time
+		return ti.After(tj)
+	})
+
+	type eventItem struct {
+		Type      string `json:"type"`
+		Reason    string `json:"reason"`
+		Message   string `json:"message"`
+		Source    string `json:"source"`
+		Count     int32  `json:"count"`
+		FirstSeen string `json:"firstSeen"`
+		LastSeen  string `json:"lastSeen"`
+	}
+
+	items := make([]eventItem, 0, len(events.Items))
+	for _, e := range events.Items {
+		source := e.Source.Component
+		if e.Source.Host != "" {
+			source += "/" + e.Source.Host
+		}
+		items = append(items, eventItem{
+			Type:      e.Type,
+			Reason:    e.Reason,
+			Message:   e.Message,
+			Source:    source,
+			Count:     e.Count,
+			FirstSeen: e.FirstTimestamp.Time.Format("2006-01-02T15:04:05Z"),
+			LastSeen:  e.LastTimestamp.Time.Format("2006-01-02T15:04:05Z"),
+		})
+	}
+
+	return c.JSON(fiber.Map{"events": items, "count": len(items)})
 }
 
 func extractContainerNames(obj *unstructured.Unstructured) []string {

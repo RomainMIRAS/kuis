@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useResources } from '@/hooks/useResources'
 import { useResourceList } from '@/hooks/useWebSocket'
 import { ResourceTable } from '@/components/resources/ResourceTable'
@@ -13,7 +13,13 @@ interface ResourceListPageProps {
 
 export function ResourceListPage({ namespace, onConnectionChange }: ResourceListPageProps) {
   const { group = 'core', resource = 'pods' } = useParams()
+  const navigate = useNavigate()
   const [selected, setSelected] = useState<KubeResource | null>(null)
+
+  const handleOpen = useCallback((item: KubeResource) => {
+    const ns = item.metadata.namespace || '_'
+    navigate(`/resources/${group}/${resource}/${ns}/${item.metadata.name}`)
+  }, [navigate, group, resource])
 
   const { items: fetchedItems, loading, error, refetch } = useResources(group, resource, namespace)
   const { items, connected } = useResourceList(group, resource, namespace, fetchedItems)
@@ -35,6 +41,7 @@ export function ResourceListPage({ namespace, onConnectionChange }: ResourceList
         loading={loading}
         error={error}
         onSelect={setSelected}
+        onOpen={handleOpen}
       />
 
       {selected && (

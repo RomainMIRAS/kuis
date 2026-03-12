@@ -1,3 +1,13 @@
+export interface ResourceEvent {
+  type: string
+  reason: string
+  message: string
+  source: string
+  count: number
+  firstSeen: string
+  lastSeen: string
+}
+
 const BASE = ''
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -85,6 +95,11 @@ export const api = {
   listContainers: (group: string, namespace: string, name: string) =>
     request<{ containers: string[] }>(
       `/api/resources/${encodeURIComponent(group)}/pods/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/containers`
+    ),
+
+  getResourceEvents: (group: string, resource: string, namespace: string, name: string) =>
+    request<{ events: ResourceEvent[]; count: number }>(
+      `/api/resources/${encodeURIComponent(group)}/${encodeURIComponent(resource)}/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/events`
     ),
 }
 
