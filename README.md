@@ -62,18 +62,23 @@ Creates a namespace `kuis`, a ServiceAccount with read/write RBAC, a Deployment,
 
 </details>
 
-<!-- ## Screenshots
+## Demo
 
-Screenshots will be added here once the UI is running against a live cluster.
+https://github.com/user-attachments/assets/215d5706-be42-4cb5-a30b-94815d26985b
 
-TODO: Add screenshots/GIFs showing:
-- Cluster overview dashboard
-- Resource table with real-time updates
-- Pod logs streaming
-- Pod exec terminal
-- YAML editor
+<details>
+<summary><strong>What's shown in the demo</strong></summary>
+
+- Browsing Pods, Deployments, Services across namespaces
+- Real-time resource updates via WebSocket
+- Slide-over panel for quick resource preview
+- Full-page detail view with enriched metadata, conditions, and events
+- Streaming pod logs in xterm.js terminal
+- Interactive shell exec into containers
+- YAML editing with Monaco Editor
 - Multi-kubeconfig switching
--->
+
+</details>
 
 ## Features
 
